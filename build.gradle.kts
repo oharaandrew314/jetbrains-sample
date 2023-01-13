@@ -24,12 +24,14 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation")
     implementation("io.ktor:ktor-serialization-kotlinx-json")
     implementation("io.ktor:ktor-server-resources")
-    implementation("org.jetbrains.exposed:exposed-core")
     implementation("org.jetbrains.exposed:exposed-jdbc")
+    implementation("dev.forkhandles:result4k")
+    implementation("dev.forkhandles:values4k")
 
     testImplementation(kotlin("test"))
     testRuntimeOnly("com.h2database:h2:2.1.214")
     testImplementation("io.kotest:kotest-assertions-core-jvm:5.5.4")
+    testImplementation("io.kotest.extensions:kotest-assertions-ktor:1.0.3")
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("io.ktor:ktor-client-content-negotiation")
 }
