@@ -19,33 +19,31 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class AddressBookApplication private constructor(
+class AddressBook(
     val getCustomer: GetCustomer,
     val saveCustomer: SaveCustomer
 ) {
-    companion object {
-        operator fun invoke(database: Database) = AddressBookApplication(
-            getCustomer = GetCustomer.exposed(database),
-            saveCustomer = SaveCustomer.exposed(database)
-        )
-
-        operator fun invoke(dbInMemory: Boolean, dbName: String): AddressBookApplication {
-            val database = if (dbInMemory) {
-                Database.connect("jdbc:h2:mem:$dbName;DB_CLOSE_DELAY=-1")
-            } else {
-                Database.connect("jdbc:h2:file:$dbName")
-            }
-
-            transaction(database) {
-                SchemaUtils.createMissingTablesAndColumns(CustomerTable, AddressTable)
-            }
-
-            return this(database)
-        }
-    }
+    companion object
 }
 
-fun Application.installAddressBook(app: AddressBookApplication) {
+fun AddressBook.Companion.h2DbExposed(dbInMemory: Boolean, dbName: String): AddressBook {
+    val database = if (dbInMemory) {
+        Database.connect("jdbc:h2:mem:$dbName;DB_CLOSE_DELAY=-1")
+    } else {
+        Database.connect("jdbc:h2:file:$dbName")
+    }
+
+    transaction(database) {
+        SchemaUtils.createMissingTablesAndColumns(CustomerTable, AddressTable)
+    }
+
+    return AddressBook(
+        getCustomer = GetCustomer.exposed(database),
+        saveCustomer = SaveCustomer.exposed(database)
+    )
+}
+
+fun Application.installAddressBook(app: AddressBook) {
     install(ContentNegotiation) {
         json()
     }

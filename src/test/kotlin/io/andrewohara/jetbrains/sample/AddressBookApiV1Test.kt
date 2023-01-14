@@ -14,28 +14,28 @@ import java.util.UUID
 
 class AddressBookApiV1Test {
 
-    private val app = AddressBookApplication(dbInMemory = true, dbName = UUID.randomUUID().toString())
+    private val book = AddressBook.h2DbExposed(dbInMemory = true, dbName = UUID.randomUUID().toString())
 
     @Test
-    fun `swagger ui - not found`() = app.testClient { client ->
+    fun `swagger ui - not found`() = book.testClient { client ->
         val resp = client.get("/")
         resp shouldHaveStatus HttpStatusCode.NotFound
     }
 
     @Test
-    fun `get customer - malformed id`() = app.testClient { client ->
+    fun `get customer - malformed id`() = book.testClient { client ->
         val resp = client.get("/v1/customers/123")
         resp shouldHaveStatus HttpStatusCode.BadRequest
     }
 
     @Test
-    fun `get customer - not found`() = app.testClient { client ->
+    fun `get customer - not found`() = book.testClient { client ->
         val resp = client.get("/v1/customers/6a05d083-ca92-454f-aade-0b14ddff4133")
         resp shouldHaveStatus HttpStatusCode.NotFound
     }
 
     @Test
-    fun `get customer - found`() = app.testClient { client ->
+    fun `get customer - found`() = book.testClient { client ->
         val data = customerData(1, address(2), address(3))
 
         val customer = saveCustomer(data)
@@ -46,7 +46,7 @@ class AddressBookApiV1Test {
     }
 
     @Test
-    fun `save customer`() = app.testClient { client ->
+    fun `save customer`() = book.testClient { client ->
         val data = CustomerDataDtoV1(
             name = "John Doe",
             email = "johndoe@fakemail.xyz",
