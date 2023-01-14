@@ -3,8 +3,17 @@ package io.andrewohara.jetbrains.sample.actions
 import io.andrewohara.jetbrains.sample.AddressTable
 import io.andrewohara.jetbrains.sample.Customer
 import io.andrewohara.jetbrains.sample.CustomerData
+import io.andrewohara.jetbrains.sample.CustomerDataDtoV1
 import io.andrewohara.jetbrains.sample.CustomerId
 import io.andrewohara.jetbrains.sample.CustomerTable
+import io.andrewohara.jetbrains.sample.toDtoV1
+import io.andrewohara.jetbrains.sample.toInternal
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.call
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.post
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.insertAndGetId
@@ -39,4 +48,12 @@ fun SaveCustomer.Companion.exposed(database: Database) = SaveCustomer { data ->
             addresses = data.addresses
         )
     }
+}
+
+fun SaveCustomer.toRouteV1(routing: Routing) = routing.post("/v1/customers") {
+    val customer = call
+        .receive<CustomerDataDtoV1>().toInternal()
+        .let(this@toRouteV1)
+
+    call.respond(HttpStatusCode.Created, customer.toDtoV1())
 }

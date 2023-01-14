@@ -1,6 +1,7 @@
 package io.andrewohara.jetbrains.sample
 
 import io.kotest.assertions.ktor.client.shouldHaveStatus
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -23,9 +24,15 @@ class AddressBookApiV1Test {
     }
 
     @Test
-    fun `get customer - malformed id`() = book.testClient { client ->
+    fun `get customer - id not uuid`() = book.testClient { client ->
         val resp = client.get("/v1/customers/123")
         resp shouldHaveStatus HttpStatusCode.BadRequest
+    }
+
+    @Test
+    fun `get customer - empty id`() = book.testClient { client ->
+        val resp = client.get("/v1/customers/")
+        resp shouldHaveStatus HttpStatusCode.NotFound
     }
 
     @Test
@@ -36,9 +43,7 @@ class AddressBookApiV1Test {
 
     @Test
     fun `get customer - found`() = book.testClient { client ->
-        val data = customerData(1, address(2), address(3))
-
-        val customer = saveCustomer(data)
+        val customer = book.createCustomer(1)
 
         val resp = client.get("/v1/customers/${customer.id}")
         resp shouldHaveStatus HttpStatusCode.OK
@@ -69,6 +74,93 @@ class AddressBookApiV1Test {
         )
 
         // verify saved resource
-        getCustomer(CustomerId.parse(created.id))?.toDtoV1() shouldBe created
+        book.getCustomer(CustomerId.parse(created.id))?.toDtoV1() shouldBe created
+    }
+
+    @Test
+    fun `save customer - invalid json`() = book.testClient { client ->
+        val resp = client.post("/v1/customers") {
+            contentType(ContentType.Application.Json)
+            setBody("{\"name\":\"foo\"}")
+        }
+
+        resp shouldHaveStatus HttpStatusCode.BadRequest
+    }
+
+    @Test
+    fun `list customers - no filter`() = book.testClient { client ->
+        val customer1 = book.createCustomer(1)
+        val customer2 = book.createCustomer(2)
+
+        val resp = client.get("/v1/customers")
+        resp shouldHaveStatus HttpStatusCode.OK
+        resp.body<List<CustomerDtoV1>>().shouldContainExactlyInAnyOrder(
+            customer1.toDtoV1(), customer2.toDtoV1()
+        )
+    }
+
+    @Test
+    fun `list customers - name filter`() = book.testClient { client ->
+        val customer1 = book.createCustomer(1, name = "name1", email="email")
+        book.createCustomer(2, name = "name2", email = "email")
+
+        val resp = client.get("/v1/customers") {
+            url {
+                parameters.append("name", customer1.name.value)
+            }
+        }
+        resp shouldHaveStatus HttpStatusCode.OK
+        resp.body<List<CustomerDtoV1>>().shouldContainExactlyInAnyOrder(
+            customer1.toDtoV1()
+        )
+    }
+
+    @Test
+    fun `list customers - email filter`() = book.testClient { client ->
+        book.createCustomer(1, name = "name", email = "email1")
+        val customer2 = book.createCustomer(2, name = "name", email = "email2")
+
+        val resp = client.get("/v1/customers") {
+            url {
+                parameters.append("email", customer2.email.value)
+            }
+        }
+        resp shouldHaveStatus HttpStatusCode.OK
+        resp.body<List<CustomerDtoV1>>().shouldContainExactlyInAnyOrder(
+            customer2.toDtoV1()
+        )
+    }
+
+    @Test
+    fun `list customers - email and name filter`() = book.testClient { client ->
+        book.createCustomer(1, name = "name1", email = "email1")
+        val customer2 = book.createCustomer(2, name = "name1", email = "email2")
+        book.createCustomer(3, name = "name2", email = "email2")
+
+        val resp = client.get("/v1/customers") {
+            url {
+                parameters.append("name", customer2.name.value)
+                parameters.append("email", customer2.email.value)
+            }
+        }
+        resp shouldHaveStatus HttpStatusCode.OK
+        resp.body<List<CustomerDtoV1>>().shouldContainExactlyInAnyOrder(
+            customer2.toDtoV1()
+        )
+    }
+
+    @Test
+    fun `list customers - empty name and email`() = book.testClient { client ->
+        book.createCustomer(1, name = "name1", email = "email1")
+        book.createCustomer(2, name = "nane1", email = "email2")
+        book.createCustomer(3, name = "name2", email = "email2")
+
+        val resp = client.get("/v1/customers") {
+            url {
+                parameters.append("name", "")
+                parameters.append("email", "")
+            }
+        }
+        resp shouldHaveStatus HttpStatusCode.BadRequest
     }
 }

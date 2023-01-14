@@ -5,7 +5,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.testing.testApplication
 
-fun AddressBook.testClient(testFn: suspend AddressBook.(HttpClient) -> Unit) = testApplication {
+fun AddressBook.testClient(testFn: suspend (HttpClient) -> Unit) = testApplication {
     application {
         installAddressBook(this@testClient)
     }
@@ -16,14 +16,19 @@ fun AddressBook.testClient(testFn: suspend AddressBook.(HttpClient) -> Unit) = t
         }
     }
 
-    testFn(this@testClient, client)
+    testFn(client)
 }
 
-fun customerData(number: Int, vararg addresses: Address) = CustomerData(
-    name = CustomerName.of("customer $number"),
-    email = EmailAddress.of("customer$number@fakemail.xyz"),
+fun AddressBook.createCustomer(
+    number: Int,
+    vararg addresses: Address,
+    name: String = "customer $number",
+    email: String = "customer$number@fakemail.xyz"
+) = CustomerData(
+    name = CustomerName.of(name),
+    email = EmailAddress.of(email),
     addresses = addresses.toList()
-)
+).let(saveCustomer)
 
 fun address(number: Int) = Address(
     streetName = "$number my street",
