@@ -2,7 +2,7 @@
 
 Toy Address Book project built with Ktor, Exposed, and kotlinx-serialization.
 
-## Run the API
+## Serve the API
 
 There are a few optional environment variables:
 - **PORT**: default *8080*
@@ -12,6 +12,15 @@ There are a few optional environment variables:
 ```shell
 $ sh gradlew run
 ```
+
+## API Routes
+
+| Operation     | Method | Path               | Inputs                                                                 | Outputs                      |
+|---------------|--------|--------------------|------------------------------------------------------------------------|------------------------------|
+| ListCustomers | GET    | /v1/customers      | - name: String (query, optional)<br/>- email: String (query, optional) | - List<CustomerDtoV1> (body) |
+| GetCustomer   | GET    | /v1/customers/{id} | - id: UUID (path)                                                      | - CustomerDtoV1 (body)       |
+| SaveCustomer  | POST   | /v1/customers      | - CustomerDataDtoV1 (body)                                             | - CustomerDtoV1 (body)       |
+
 
 ## Run Tests
 

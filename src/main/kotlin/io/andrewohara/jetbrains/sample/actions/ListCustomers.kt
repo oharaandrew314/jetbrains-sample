@@ -21,7 +21,7 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
-fun interface ListCustomers: (CustomerName?, EmailAddress?) -> Set<Customer> {
+fun interface ListCustomers: (CustomerName?, EmailAddress?) -> Collection<Customer> {
     operator fun invoke() = invoke(null, null)
     operator fun invoke(customerName: CustomerName) = invoke(customerName, null)
     operator fun invoke(emailAddress: EmailAddress) = invoke(null, emailAddress)
@@ -67,7 +67,7 @@ fun ListCustomers.Companion.exposed(database: Database) = ListCustomers { name, 
                 email = EmailAddress.of(row[CustomerTable.email]),
                 addresses = addresses[id].orEmpty()
             )
-        }.toSet()
+        }
     }
 }
 
