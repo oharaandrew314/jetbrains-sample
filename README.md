@@ -2,6 +2,10 @@
 
 Toy Address Book project built with Ktor, Exposed, and kotlinx-serialization.
 
+## Requirements
+
+- Java 11
+
 ## Serve the API
 
 There are a few optional environment variables:
