@@ -6,6 +6,8 @@ Toy Address Book project built with Ktor, Exposed, and kotlinx-serialization.
 
 - Java 11
 
+No database server is necessary; H2 is bundled, and can be configured for file or memory mode.
+
 ## Serve the API
 
 There are a few optional environment variables:
