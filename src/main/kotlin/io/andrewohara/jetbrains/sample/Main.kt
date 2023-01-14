@@ -1,7 +1,7 @@
 package io.andrewohara.jetbrains.sample
 
+import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
 import org.slf4j.LoggerFactory
 
 fun main() {
@@ -16,7 +16,7 @@ fun main() {
 
     val book = AddressBook.h2DbExposed(dbInMemory = dbInMemory, dbName = dbName)
 
-    embeddedServer(Netty, port = port) {
+    embeddedServer(CIO, port = port) {
         installAddressBook(book)
     }.start(wait = true)
 }

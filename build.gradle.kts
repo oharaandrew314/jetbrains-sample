@@ -20,7 +20,7 @@ dependencies {
     implementation(platform("org.jetbrains.exposed:exposed-bom:0.40.1"))
 
     implementation(kotlin("stdlib-jdk8"))
-    implementation("io.ktor:ktor-server-netty")
+    implementation("io.ktor:ktor-server-cio")
     implementation("io.ktor:ktor-server-content-negotiation")
     implementation("io.ktor:ktor-serialization-kotlinx-json")
     implementation("org.jetbrains.exposed:exposed-jdbc")
